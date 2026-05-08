@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Нұсқаулық | Кітаптан мультфильмге дейін</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=Playfair+Display:wght@600;700&display=swap">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div id="nav-placeholder"></div>
+
+<main class="page">
+  <div class="page-header">
+    <h1 id="instrTitle">Цифрлық құралдар навигаторы</h1>
+    <p id="instrDesc">Мәтінді оқығаннан кейін сурет, видео, AR/VR немесе мультфильм жасауға арналған нұсқаулық</p>
+  </div>
+
+  <div class="tool-tabs" id="toolTabs">
+    <button class="filter-btn active" data-group="image"     onclick="showGroup('image',this)"    >Сурет</button>
+    <button class="filter-btn"        data-group="animate"   onclick="showGroup('animate',this)"  >Оживление</button>
+    <button class="filter-btn"        data-group="video"     onclick="showGroup('video',this)"    >Видео</button>
+    <button class="filter-btn"        data-group="arvr"      onclick="showGroup('arvr',this)"     >AR / VR</button>
+    <button class="filter-btn"        data-group="storybook" onclick="showGroup('storybook',this)">Storybook</button>
+  </div>
+
+  <div class="tool-grid" id="toolsArea"></div>
+</main>
+
+<footer><p id="footerText">«Кітаптан мультфильмге дейін: Отбасылық стартап» &copy; 2025</p></footer>
+
+<script src="js/nav.js"></script>
+<script src="js/instructions.js"></script>
+<script>
+window.onLangChange = function(lang) {
+  const titles = {
+    kz:{ instrTitle:'Цифрлық құралдар навигаторы', instrDesc:'Мәтінді оқығаннан кейін сурет, видео, AR/VR немесе мультфильм жасауға арналған нұсқаулық', footerText:'«Кітаптан мультфильмге дейін: Отбасылық стартап» © 2025' },
+    ru:{ instrTitle:'Навигатор цифровых инструментов', instrDesc:'Пошаговые инструкции по созданию рисунков, видео, AR/VR и мультфильмов после чтения текста', footerText:'«От книги до мультфильма: Семейный стартап» © 2025' }
+  };
+  const L = titles[lang]||titles.kz;
+  Object.entries(L).forEach(([id,v])=>{ const el=document.getElementById(id); if(el) el.textContent=v; });
+};
+</script>
+</body>
+</html>

@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Мұғалім кабинеті | Кітаптан мультфильмге дейін</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=Playfair+Display:wght@600;700&display=swap">
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .teacher-tabs{display:flex;gap:8px;margin-bottom:24px;border-bottom:1px solid var(--border);padding-bottom:12px;}
+    .t-tab{padding:8px 18px;border-radius:var(--radius-sm);font-size:13px;font-weight:600;color:var(--text-secondary);transition:all .18s;}
+    .t-tab.active{background:var(--brand);color:white;}
+    .upload-zone{border:2px dashed var(--border-mid);border-radius:var(--radius-lg);padding:32px;text-align:center;transition:border-color .2s;}
+    .upload-zone:hover{border-color:var(--brand);}
+    .work-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:18px;box-shadow:var(--shadow-sm);}
+    .work-card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:8px;}
+    .work-card-name{font-weight:700;font-size:15px;}
+    .work-card-date{font-size:12px;color:var(--text-muted);}
+    .work-card-story{font-size:12px;color:var(--brand);font-weight:600;margin-bottom:8px;}
+    .work-card-answer{font-size:14px;line-height:1.65;color:var(--text-secondary);background:var(--bg);border-radius:var(--radius-sm);padding:12px;border:1px solid var(--border);margin-bottom:10px;}
+    .work-card img,.work-card video{width:100%;max-height:200px;object-fit:cover;border-radius:var(--radius-sm);margin-bottom:10px;background:#0f172a;}
+    .badge-approved{background:#dcfce7;color:#065f46;padding:3px 10px;border-radius:999px;font-size:11px;font-weight:700;}
+    .badge-pending{background:#fef3c7;color:#92400e;padding:3px 10px;border-radius:999px;font-size:11px;font-weight:700;}
+    #loadingMsg{text-align:center;padding:40px;color:var(--text-muted);}
+  </style>
+</head>
+<body>
+
+<div id="nav-placeholder"></div>
+
+<main class="page" id="teacherContent" style="display:none;">
+  <div class="page-header" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
+    <div>
+      <h1 id="t-title">Мұғалім кабинеті</h1>
+      <p id="t-desc" style="color:var(--text-secondary);font-size:14px;margin-top:4px;"></p>
+    </div>
+    <button class="btn btn-outline btn-sm" onclick="signOutTeacher()">Шығу</button>
+  </div>
+
+  <div class="teacher-tabs">
+    <button class="t-tab active" onclick="showTab('submissions',this)">Оқушы жұмыстары</button>
+    <button class="t-tab" onclick="showTab('upload',this)">Медиа жүктеу</button>
+  </div>
+
+  <!-- SUBMISSIONS TAB -->
+  <div id="tab-submissions">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap;">
+      <span id="sub-count" style="font-size:14px;color:var(--text-muted);"></span>
+      <select id="filterApproved" onchange="loadSubmissions()" style="padding:7px 12px;border:1.5px solid var(--border);border-radius:10px;font-size:13px;font-family:inherit;">
+        <option value="all">Барлығы</option>
+        <option value="pending">Күтуде</option>
+        <option value="approved">Жарияланған</option>
+      </select>
+    </div>
+    <div class="media-grid" id="submissionsGrid"></div>
+  </div>
+
+  <!-- UPLOAD TAB -->
+  <div id="tab-upload" style="display:none;">
+    <div class="sidebar-block" style="max-width:520px;">
+      <h3 style="margin-bottom:16px;">Галереяға медиа жүктеу</h3>
+      <div class="form-group">
+        <label class="form-label">Категория</label>
+        <select id="uploadCat" class="form-input">
+          <option value="reading">Оқу</option>
+          <option value="creative">Шығармашылық</option>
+          <option value="technology">Технология</option>
+          <option value="results">Нәтиже</option>
+        </select>
+      </div>
+      <div class="upload-zone">
+        <input id="uploadFile" type="file" accept="image/*,video/*" style="display:none;" onchange="previewUpload(this)">
+        <button class="btn btn-outline" onclick="document.getElementById('uploadFile').click()">Файл таңдау</button>
+        <p style="font-size:13px;color:var(--text-muted);margin-top:8px;">Фото немесе видео (макс. 100MB)</p>
+        <div id="uploadPreview" style="margin-top:12px;"></div>
+      </div>
+      <button class="btn btn-primary" style="margin-top:14px;width:100%;" onclick="uploadToGallery()">Галереяға жариялау</button>
+      <div id="uploadStatus" style="margin-top:10px;font-size:13px;font-weight:600;"></div>
+    </div>
+  </div>
+
+</main>
+
+<div id="loadingMsg">Жүктелуде...</div>
+
+<footer><p>«Кітаптан мультфильмге дейін: Отбасылық стартап» &copy; 2025</p></footer>
+
+<script src="js/nav.js"></script>
+<script type="module">
+import { auth, db, storage } from './js/firebase-config.js';
+import { onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+import { collection, query, orderBy, getDocs, doc, updateDoc, addDoc, serverTimestamp, where }
+  from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+import { ref, uploadBytesResumable, getDownloadURL }
+  from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js';
+
+// Auth guard
+onAuthStateChanged(auth, user => {
+  if (!user) { location.href = 'login.html'; return; }
+  document.getElementById('loadingMsg').style.display = 'none';
+  document.getElementById('teacherContent').style.display = 'block';
+  document.getElementById('t-desc').textContent = user.email;
+  loadSubmissions();
+});
+
+window.signOutTeacher = async () => {
+  await signOut(auth);
+  location.href = 'login.html';
+};
+
+// Tabs
+window.showTab = (tab, btn) => {
+  document.querySelectorAll('.t-tab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('tab-submissions').style.display = tab==='submissions' ? '' : 'none';
+  document.getElementById('tab-upload').style.display      = tab==='upload'      ? '' : 'none';
+};
+
+// Load submissions
+window.loadSubmissions = async () => {
+  const grid = document.getElementById('submissionsGrid');
+  const filterVal = document.getElementById('filterApproved').value;
+  grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--text-muted);">Жүктелуде...</div>';
+
+  try {
+    let q;
+    if (filterVal === 'approved') q = query(collection(db,'submissions'), where('approved','==',true),  orderBy('createdAt','desc'));
+    else if (filterVal === 'pending') q = query(collection(db,'submissions'), where('approved','==',false), orderBy('createdAt','desc'));
+    else q = query(collection(db,'submissions'), orderBy('createdAt','desc'));
+
+    const snap = await getDocs(q);
+    document.getElementById('sub-count').textContent = `Барлығы: ${snap.size}`;
+    grid.innerHTML = '';
+
+    if (snap.empty) {
+      grid.innerHTML = '<div class="empty-state" style="grid-column:1/-1"><p>Жұмыс жоқ</p></div>';
+      return;
+    }
+
+    snap.forEach(docSnap => {
+      const d = docSnap.data();
+      const id = docSnap.id;
+      const date = d.createdAt?.toDate?.()?.toLocaleDateString('ru-RU') || '—';
+      const approved = d.approved === true;
+
+      const card = document.createElement('div');
+      card.className = 'work-card';
+      card.innerHTML = `
+        <div class="work-card-header">
+          <span class="work-card-name">${d.studentName||'—'} · ${d.studentClass||''}</span>
+          <span class="${approved?'badge-approved':'badge-pending'}">${approved?'Жарияланған':'Күтуде'}</span>
+        </div>
+        <div class="work-card-date">${date}</div>
+        ${d.storyTitleKz||d.storyTitleRu ? `<div class="work-card-story">📖 ${d.storyTitleKz||d.storyTitleRu}</div>` : ''}
+        ${d.answer ? `<div class="work-card-answer">${d.answer}</div>` : ''}
+        ${d.fileUrl ? (d.fileType?.startsWith('video')
+          ? `<video src="${d.fileUrl}" controls></video>`
+          : `<img src="${d.fileUrl}" alt="Жұмыс" loading="lazy">`
+        ) : ''}
+        <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;">
+          ${!approved ? `<button class="btn btn-primary btn-sm" onclick="approveWork('${id}')">Галереяға жариялау</button>` : ''}
+          <button class="btn btn-outline btn-sm" onclick="deleteWork('${id}',this)">Жою</button>
+        </div>`;
+      grid.appendChild(card);
+    });
+  } catch(e) {
+    grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1"><p>Қате: ${e.message}</p></div>`;
+  }
+};
+
+window.approveWork = async (id) => {
+  try {
+    await updateDoc(doc(db,'submissions',id), { approved: true });
+    loadSubmissions();
+  } catch(e) { alert('Қате: '+e.message); }
+};
+
+window.deleteWork = async (id, btn) => {
+  if (!confirm('Жұмысты жою керек пе?')) return;
+  const { deleteDoc } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+  try {
+    await deleteDoc(doc(db,'submissions',id));
+    btn.closest('.work-card').remove();
+  } catch(e) { alert('Қате: '+e.message); }
+};
+
+// Upload to gallery
+window.previewUpload = (input) => {
+  const file = input.files[0];
+  if (!file) return;
+  const preview = document.getElementById('uploadPreview');
+  const url = URL.createObjectURL(file);
+  if (file.type.startsWith('video')) {
+    preview.innerHTML = `<video src="${url}" controls style="width:100%;max-height:160px;border-radius:10px;"></video>`;
+  } else {
+    preview.innerHTML = `<img src="${url}" style="width:100%;max-height:160px;object-fit:cover;border-radius:10px;">`;
+  }
+};
+
+window.uploadToGallery = async () => {
+  const file = document.getElementById('uploadFile').files[0];
+  const cat  = document.getElementById('uploadCat').value;
+  const status = document.getElementById('uploadStatus');
+
+  if (!file) { status.textContent = 'Файл таңдаңыз'; return; }
+  status.textContent = 'Жүктелуде...';
+
+  try {
+    const path = `gallery/${cat}/${Date.now()}_${file.name}`;
+    const storageRef = ref(storage, path);
+    const task = uploadBytesResumable(storageRef, file);
+
+    task.on('state_changed',
+      snap => { status.textContent = `Жүктелуде: ${Math.round(snap.bytesTransferred/snap.totalBytes*100)}%`; },
+      err  => { status.textContent = 'Қате: ' + err.message; },
+      async () => {
+        const url = await getDownloadURL(task.snapshot.ref);
+        await addDoc(collection(db,'gallery'), {
+          src: url, type: file.type.startsWith('video') ? 'video' : 'image',
+          category: cat, createdAt: serverTimestamp()
+        });
+        status.textContent = '✓ Галереяға жарияланды!';
+        document.getElementById('uploadFile').value = '';
+        document.getElementById('uploadPreview').innerHTML = '';
+        setTimeout(() => { status.textContent=''; }, 3000);
+      }
+    );
+  } catch(e) { status.textContent = 'Қате: '+e.message; }
+};
+</script>
+</body>
+</html>

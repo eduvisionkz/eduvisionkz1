@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Мәтін | Кітаптан мультфильмге дейін</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=Playfair+Display:wght@600;700&display=swap">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div id="nav-placeholder"></div>
+
+<main class="page">
+  <div class="story-layout">
+
+    <!-- MAIN TEXT -->
+    <div class="story-main">
+      <a class="story-back" href="stories.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+        <span id="backLabel">Артқа</span>
+      </a>
+      <div class="story-meta-row" id="storyMeta"></div>
+      <h1 class="story-title" id="storyTitle"></h1>
+      <div class="story-text" id="storyText"></div>
+    </div>
+
+    <!-- SIDEBAR -->
+    <aside class="story-sidebar">
+
+      <!-- Tasks -->
+      <div class="sidebar-block">
+        <h3 id="tasksTitle">Тапсырмалар</h3>
+        <ul class="tasks-list" id="storyTasks"></ul>
+      </div>
+
+      <!-- Submit form -->
+      <div class="sidebar-block">
+        <h3 id="formTitle">Жауап жіберу</h3>
+        <div class="form-group">
+          <label class="form-label" id="nameLabel">Аты-жөні</label>
+          <input class="form-input" id="studentName" type="text">
+        </div>
+        <div class="form-group">
+          <label class="form-label" id="classLabel">Сынып</label>
+          <input class="form-input" id="studentClass" type="text" style="max-width:120px;">
+        </div>
+        <div class="form-group">
+          <label class="form-label" id="answerLabel">Жауап</label>
+          <textarea class="form-textarea" id="studentAnswer" rows="5"></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label" id="fileLabel">Файл (фото / видео)</label>
+          <input class="form-file" id="studentFile" type="file" accept="image/*,video/*">
+        </div>
+        <button class="btn btn-primary" style="width:100%;" id="submitBtn" onclick="submitWork()">
+          <span id="submitBtnText">Жіберу</span>
+        </button>
+        <div class="submit-status" id="submitStatus"></div>
+      </div>
+
+    </aside>
+  </div>
+</main>
+
+<footer><p id="footerText">«Кітаптан мультфильмге дейін: Отбасылық стартап» &copy; 2025</p></footer>
+
+<script>window.STORIES = [];</script>
+<script src="js/data/stories-clean-1.js"></script>
+<script src="js/data/stories-clean-2.js"></script>
+<script src="js/data/stories-clean-3.js"></script>
+<script src="js/data/stories-clean-4.js"></script>
+<script src="js/data/stories-clean-5.js"></script>
+<script src="js/data/stories-clean-6.js"></script>
+<script src="js/data/stories-clean-7.js"></script>
+<script src="js/data/stories-clean-8.js"></script>
+<script src="js/data/stories-clean-9.js"></script>
+<script src="js/data/stories-clean-10.js"></script>
+<script src="js/data/stories-clean-11.js"></script>
+<script src="js/data/stories-clean-12.js"></script>
+<script src="js/data/stories-clean-13.js"></script>
+<script src="js/data/stories-clean-14.js"></script>
+<script src="js/data/stories-clean-15.js"></script>
+<script src="js/data/stories-clean-16.js"></script>
+<script src="js/data/stories-clean-17.js"></script>
+<script src="js/data/stories-clean-18.js"></script>
+<script src="js/data/parable-clean-1.js"></script>
+<script src="js/data/parable-clean-2.js"></script>
+<script src="js/data/parable-clean-3.js"></script>
+<script src="js/data/parable-clean-4.js"></script>
+<script src="js/data/parable-clean-5.js"></script>
+<script src="js/data/parable-clean-6.js"></script>
+<script src="js/data/parable-clean-7.js"></script>
+<script src="js/data/parable-clean-8.js"></script>
+<script src="js/data/parable-clean-9.js"></script>
+<script src="js/data/parable-clean-10.js"></script>
+<script src="js/data/parable-clean-11.js"></script>
+<script src="js/data/wisdom-clean-1.js"></script>
+<script src="js/data/wisdom-clean-2.js"></script>
+<script src="js/nav.js"></script>
+<script src="js/story.js" type="module"></script>
+</body>
+</html>

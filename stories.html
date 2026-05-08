@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Мәтіндер | Кітаптан мультфильмге дейін</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=Playfair+Display:wght@600;700&display=swap">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div id="nav-placeholder"></div>
+
+<main class="page">
+  <div class="page-header">
+    <h1 id="pageTitle">Мәтіндер жинағы</h1>
+    <p id="pageDesc">Ертегі, притча және өсиеттер — оқушыға арналған</p>
+  </div>
+
+  <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:14px;">
+    <div class="filter-bar" id="catFilters">
+      <button class="filter-btn active" data-category="all">Барлығы</button>
+      <button class="filter-btn" data-category="story">Ертегі / Әңгіме</button>
+      <button class="filter-btn" data-category="parable">Притча</button>
+      <button class="filter-btn" data-category="wisdom">Өсиет</button>
+    </div>
+    <div class="search-wrap">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      <input class="search-input" id="searchInput" type="search" placeholder="Іздеу...">
+    </div>
+  </div>
+
+  <div class="stories-grid" id="storiesGrid"></div>
+</main>
+
+<footer><p id="footerText">«Кітаптан мультфильмге дейін: Отбасылық стартап» &copy; 2025</p></footer>
+
+<script>window.STORIES = [];</script>
+<script src="js/data/stories-clean-1.js"></script>
+<script src="js/data/stories-clean-2.js"></script>
+<script src="js/data/stories-clean-3.js"></script>
+<script src="js/data/stories-clean-4.js"></script>
+<script src="js/data/stories-clean-5.js"></script>
+<script src="js/data/stories-clean-6.js"></script>
+<script src="js/data/stories-clean-7.js"></script>
+<script src="js/data/stories-clean-8.js"></script>
+<script src="js/data/stories-clean-9.js"></script>
+<script src="js/data/stories-clean-10.js"></script>
+<script src="js/data/stories-clean-11.js"></script>
+<script src="js/data/stories-clean-12.js"></script>
+<script src="js/data/stories-clean-13.js"></script>
+<script src="js/data/stories-clean-14.js"></script>
+<script src="js/data/stories-clean-15.js"></script>
+<script src="js/data/stories-clean-16.js"></script>
+<script src="js/data/stories-clean-17.js"></script>
+<script src="js/data/stories-clean-18.js"></script>
+<script src="js/data/parable-clean-1.js"></script>
+<script src="js/data/parable-clean-2.js"></script>
+<script src="js/data/parable-clean-3.js"></script>
+<script src="js/data/parable-clean-4.js"></script>
+<script src="js/data/parable-clean-5.js"></script>
+<script src="js/data/parable-clean-6.js"></script>
+<script src="js/data/parable-clean-7.js"></script>
+<script src="js/data/parable-clean-8.js"></script>
+<script src="js/data/parable-clean-9.js"></script>
+<script src="js/data/parable-clean-10.js"></script>
+<script src="js/data/parable-clean-11.js"></script>
+<script src="js/data/wisdom-clean-1.js"></script>
+<script src="js/data/wisdom-clean-2.js"></script>
+<script src="js/nav.js"></script>
+<script src="js/stories.js"></script>
+</body>
+</html>

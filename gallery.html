@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Галерея | Кітаптан мультфильмге дейін</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=Playfair+Display:wght@600;700&display=swap">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div id="nav-placeholder"></div>
+
+<main class="page">
+  <div class="page-header">
+    <h1 id="galleryTitle">Галерея</h1>
+    <p id="galleryDesc">Оқушылардың жұмыстары, видео және фото материалдар</p>
+  </div>
+
+  <div class="filter-bar" id="galleryFilters">
+    <button class="filter-btn active" data-cat="all">Барлығы</button>
+    <button class="filter-btn" data-cat="reading">Оқу</button>
+    <button class="filter-btn" data-cat="creative">Шығармашылық</button>
+    <button class="filter-btn" data-cat="technology">Технология</button>
+    <button class="filter-btn" data-cat="results">Нәтиже</button>
+  </div>
+
+  <div class="media-grid" id="gallery"></div>
+</main>
+
+<!-- Modal -->
+<div class="modal" id="modal" onclick="closeModal()">
+  <button class="modal-close" onclick="event.stopPropagation();closeModal()">✕</button>
+</div>
+
+<footer>
+  <p>«Кітаптан мультфильмге дейін: Отбасылық стартап» &copy; 2025</p>
+</footer>
+
+<!-- ВАЖНО: media-data.js ПЕРЕД gallery.js -->
+<script src="js/media-data.js"></script>
+<script src="js/nav.js"></script>
+<script src="js/gallery.js"></script>
+</body>
+</html>

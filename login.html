@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Кіру | Кітаптан мультфильмге дейін</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=Playfair+Display:wght@600;700&display=swap">
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .login-wrap { min-height: calc(100vh - 68px); display:flex; align-items:center; justify-content:center; padding:24px; }
+    .login-box { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-xl); padding:40px 36px; width:100%; max-width:420px; box-shadow:var(--shadow); }
+    .login-box h1 { font-family:'Playfair Display',serif; font-size:26px; margin-bottom:6px; }
+    .login-box p  { font-size:14px; color:var(--text-secondary); margin-bottom:28px; }
+    .login-tabs { display:flex; gap:4px; background:var(--bg); border:1px solid var(--border); border-radius:10px; padding:4px; margin-bottom:24px; }
+    .login-tab  { flex:1; padding:8px; border-radius:8px; font-size:13px; font-weight:600; color:var(--text-muted); transition:all .18s; }
+    .login-tab.active { background:var(--brand); color:white; }
+    .login-err  { background:#fee2e2; color:#991b1b; border-radius:10px; padding:10px 14px; font-size:13px; margin-top:12px; display:none; }
+    .login-err.show { display:block; }
+  </style>
+</head>
+<body>
+
+<div id="nav-placeholder"></div>
+
+<div class="login-wrap">
+  <div class="login-box">
+    <h1 id="login-title">Мұғалім кабинеті</h1>
+    <p id="login-subtitle">Платформаға кіру</p>
+
+    <div class="login-tabs">
+      <button class="login-tab active" id="tab-login" onclick="switchTab('login')">Кіру</button>
+      <button class="login-tab" id="tab-register" onclick="switchTab('register')">Тіркелу</button>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label" id="label-email">Email</label>
+      <input class="form-input" id="email" type="email" placeholder="teacher@school.kz">
+    </div>
+    <div class="form-group">
+      <label class="form-label" id="label-password">Құпия сөз</label>
+      <input class="form-input" id="password" type="password" placeholder="••••••••">
+    </div>
+
+    <button class="btn btn-primary" style="width:100%;margin-top:8px;" onclick="handleAuth()" id="auth-btn">Кіру</button>
+    <div class="login-err" id="login-err"></div>
+  </div>
+</div>
+
+<footer><p>«Кітаптан мультфильмге дейін: Отбасылық стартап» &copy; 2025</p></footer>
+
+<script src="js/nav.js"></script>
+<script type="module">
+  import { auth } from './js/firebase-config.js';
+  import { signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged }
+    from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+
+  // If already logged in → go to teacher
+  onAuthStateChanged(auth, user => {
+    if (user) location.href = 'teacher.html';
+  });
+
+  let mode = 'login';
+
+  window.switchTab = function(m) {
+    mode = m;
+    document.getElementById('tab-login').classList.toggle('active', m==='login');
+    document.getElementById('tab-register').classList.toggle('active', m==='register');
+    document.getElementById('auth-btn').textContent = m==='login' ? 'Кіру' : 'Тіркелу';
+    document.getElementById('login-err').classList.remove('show');
+  };
+
+  window.handleAuth = async function() {
+    const email    = document.getElementById('email').value.trim();
+    const password = document.getElementById('password').value;
+    const errEl    = document.getElementById('login-err');
+    errEl.classList.remove('show');
+
+    if (!email || !password) { errEl.textContent='Email мен құпия сөзді толтырыңыз'; errEl.classList.add('show'); return; }
+
+    try {
+      if (mode === 'login') {
+        await signInWithEmailAndPassword(auth, email, password);
+      } else {
+        await createUserWithEmailAndPassword(auth, email, password);
+      }
+      location.href = 'teacher.html';
+    } catch (e) {
+      const msgs = {
+        'auth/user-not-found': 'Пайдаланушы табылмады',
+        'auth/wrong-password': 'Қате құпия сөз',
+        'auth/email-already-in-use': 'Бұл email тіркелген',
+        'auth/weak-password': 'Құпия сөз тым қарапайым (мин. 6 символ)',
+        'auth/invalid-email': 'Email форматы қате',
+        'auth/invalid-credential': 'Email немесе пароль қате'
+      };
+      errEl.textContent = msgs[e.code] || e.message;
+      errEl.classList.add('show');
+    }
+  };
+
+  // Enter key
+  document.addEventListener('keydown', e => { if (e.key==='Enter') window.handleAuth(); });
+</script>
+</body>
+</html>
