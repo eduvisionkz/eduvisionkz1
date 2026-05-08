@@ -9,20 +9,23 @@
   <link rel="stylesheet" href="css/style.css">
   <style>
     .teacher-tabs{display:flex;gap:8px;margin-bottom:24px;border-bottom:1px solid var(--border);padding-bottom:12px;}
-    .t-tab{padding:8px 18px;border-radius:var(--radius-sm);font-size:13px;font-weight:600;color:var(--text-secondary);transition:all .18s;}
+    .t-tab{padding:8px 18px;border-radius:var(--radius-sm);font-size:13px;font-weight:600;color:var(--text-secondary);cursor:pointer;transition:all .18s;border:none;background:none;}
     .t-tab.active{background:var(--brand);color:white;}
-    .upload-zone{border:2px dashed var(--border-mid);border-radius:var(--radius-lg);padding:32px;text-align:center;transition:border-color .2s;}
-    .upload-zone:hover{border-color:var(--brand);}
-    .work-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:18px;box-shadow:var(--shadow-sm);}
-    .work-card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:8px;}
+    .work-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:20px;box-shadow:var(--shadow-sm);}
+    .work-card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;flex-wrap:wrap;gap:8px;}
     .work-card-name{font-weight:700;font-size:15px;}
     .work-card-date{font-size:12px;color:var(--text-muted);}
     .work-card-story{font-size:12px;color:var(--brand);font-weight:600;margin-bottom:8px;}
     .work-card-answer{font-size:14px;line-height:1.65;color:var(--text-secondary);background:var(--bg);border-radius:var(--radius-sm);padding:12px;border:1px solid var(--border);margin-bottom:10px;}
-    .work-card img,.work-card video{width:100%;max-height:200px;object-fit:cover;border-radius:var(--radius-sm);margin-bottom:10px;background:#0f172a;}
+    .work-card img{width:100%;max-height:220px;object-fit:cover;border-radius:var(--radius-sm);margin-bottom:10px;display:block;}
+    .work-card video{width:100%;max-height:220px;border-radius:var(--radius-sm);margin-bottom:10px;display:block;background:#0f172a;}
+    .work-actions{display:flex;gap:8px;flex-wrap:wrap;}
     .badge-approved{background:#dcfce7;color:#065f46;padding:3px 10px;border-radius:999px;font-size:11px;font-weight:700;}
     .badge-pending{background:#fef3c7;color:#92400e;padding:3px 10px;border-radius:999px;font-size:11px;font-weight:700;}
-    #loadingMsg{text-align:center;padding:40px;color:var(--text-muted);}
+    #loadingMsg{text-align:center;padding:60px;color:var(--text-muted);font-size:15px;}
+    .upload-zone{border:2px dashed var(--border-mid);border-radius:var(--radius-lg);padding:32px;text-align:center;}
+    .upload-zone:hover{border-color:var(--brand);}
+    #uploadPreview img,#uploadPreview video{width:100%;max-height:180px;object-fit:cover;border-radius:var(--radius-sm);margin-top:12px;}
   </style>
 </head>
 <body>
@@ -33,21 +36,22 @@
   <div class="page-header" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
     <div>
       <h1 id="t-title">Мұғалім кабинеті</h1>
-      <p id="t-desc" style="color:var(--text-secondary);font-size:14px;margin-top:4px;"></p>
+      <p id="t-email" style="color:var(--text-secondary);font-size:14px;margin-top:4px;"></p>
     </div>
-    <button class="btn btn-outline btn-sm" onclick="signOutTeacher()">Шығу</button>
+    <button class="btn btn-outline btn-sm" id="signOutBtn">Шығу</button>
   </div>
 
   <div class="teacher-tabs">
-    <button class="t-tab active" onclick="showTab('submissions',this)">Оқушы жұмыстары</button>
-    <button class="t-tab" onclick="showTab('upload',this)">Медиа жүктеу</button>
+    <button class="t-tab active" id="tab-btn-submissions" onclick="showTab('submissions',this)">Оқушы жұмыстары</button>
+    <button class="t-tab" id="tab-btn-upload" onclick="showTab('upload',this)">Медиа жүктеу</button>
   </div>
 
-  <!-- SUBMISSIONS TAB -->
+  <!-- SUBMISSIONS -->
   <div id="tab-submissions">
-    <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap;">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;flex-wrap:wrap;">
       <span id="sub-count" style="font-size:14px;color:var(--text-muted);"></span>
-      <select id="filterApproved" onchange="loadSubmissions()" style="padding:7px 12px;border:1.5px solid var(--border);border-radius:10px;font-size:13px;font-family:inherit;">
+      <select id="filterApproved" onchange="loadSubmissions()"
+        style="padding:7px 12px;border:1.5px solid var(--border);border-radius:10px;font-size:13px;font-family:inherit;cursor:pointer;">
         <option value="all">Барлығы</option>
         <option value="pending">Күтуде</option>
         <option value="approved">Жарияланған</option>
@@ -56,10 +60,11 @@
     <div class="media-grid" id="submissionsGrid"></div>
   </div>
 
-  <!-- UPLOAD TAB -->
+  <!-- UPLOAD (base64 — без Storage) -->
   <div id="tab-upload" style="display:none;">
     <div class="sidebar-block" style="max-width:520px;">
-      <h3 style="margin-bottom:16px;">Галереяға медиа жүктеу</h3>
+      <h3 style="margin-bottom:16px;font-size:17px;">Галереяға медиа жүктеу</h3>
+      <p style="font-size:13px;color:var(--text-muted);margin-bottom:16px;">Фото немесе видео таңдаңыз (макс. 500KB)</p>
       <div class="form-group">
         <label class="form-label">Категория</label>
         <select id="uploadCat" class="form-input">
@@ -70,16 +75,18 @@
         </select>
       </div>
       <div class="upload-zone">
-        <input id="uploadFile" type="file" accept="image/*,video/*" style="display:none;" onchange="previewUpload(this)">
+        <input id="uploadFile" type="file" accept="image/*,video/*"
+          style="display:none;" onchange="previewUpload(this)">
         <button class="btn btn-outline" onclick="document.getElementById('uploadFile').click()">Файл таңдау</button>
-        <p style="font-size:13px;color:var(--text-muted);margin-top:8px;">Фото немесе видео (макс. 100MB)</p>
-        <div id="uploadPreview" style="margin-top:12px;"></div>
+        <p style="font-size:12px;color:var(--text-muted);margin-top:8px;">Макс. 500KB</p>
+        <div id="uploadPreview"></div>
       </div>
-      <button class="btn btn-primary" style="margin-top:14px;width:100%;" onclick="uploadToGallery()">Галереяға жариялау</button>
-      <div id="uploadStatus" style="margin-top:10px;font-size:13px;font-weight:600;"></div>
+      <button class="btn btn-primary" style="margin-top:14px;width:100%;" onclick="uploadToGallery()">
+        Галереяға жариялау
+      </button>
+      <p id="uploadStatus" style="margin-top:10px;font-size:13px;font-weight:600;min-height:20px;"></p>
     </div>
   </div>
-
 </main>
 
 <div id="loadingMsg">Жүктелуде...</div>
@@ -87,29 +94,32 @@
 <footer><p>«Кітаптан мультфильмге дейін: Отбасылық стартап» &copy; 2025</p></footer>
 
 <script src="js/nav.js"></script>
+<script src="js/teacher.js"></script>
 <script type="module">
-import { auth, db, storage } from './js/firebase-config.js';
-import { onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
-import { collection, query, orderBy, getDocs, doc, updateDoc, addDoc, serverTimestamp, where }
+import { auth, db } from './js/firebase-config.js';
+import { onAuthStateChanged, signOut }
+  from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+import { collection, query, orderBy, getDocs, doc,
+         updateDoc, deleteDoc, addDoc, serverTimestamp, where }
   from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
-import { ref, uploadBytesResumable, getDownloadURL }
-  from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js';
 
-// Auth guard
+const MAX_SIZE = 500 * 1024; // 500KB
+
+// ── Auth guard ──────────────────────────────────────────
 onAuthStateChanged(auth, user => {
   if (!user) { location.href = 'login.html'; return; }
-  document.getElementById('loadingMsg').style.display = 'none';
+  document.getElementById('loadingMsg').style.display  = 'none';
   document.getElementById('teacherContent').style.display = 'block';
-  document.getElementById('t-desc').textContent = user.email;
+  document.getElementById('t-email').textContent = user.email;
   loadSubmissions();
 });
 
-window.signOutTeacher = async () => {
+document.getElementById('signOutBtn').onclick = async () => {
   await signOut(auth);
   location.href = 'login.html';
 };
 
-// Tabs
+// ── Tabs ────────────────────────────────────────────────
 window.showTab = (tab, btn) => {
   document.querySelectorAll('.t-tab').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
@@ -117,7 +127,7 @@ window.showTab = (tab, btn) => {
   document.getElementById('tab-upload').style.display      = tab==='upload'      ? '' : 'none';
 };
 
-// Load submissions
+// ── Load submissions ────────────────────────────────────
 window.loadSubmissions = async () => {
   const grid = document.getElementById('submissionsGrid');
   const filterVal = document.getElementById('filterApproved').value;
@@ -125,9 +135,13 @@ window.loadSubmissions = async () => {
 
   try {
     let q;
-    if (filterVal === 'approved') q = query(collection(db,'submissions'), where('approved','==',true),  orderBy('createdAt','desc'));
-    else if (filterVal === 'pending') q = query(collection(db,'submissions'), where('approved','==',false), orderBy('createdAt','desc'));
-    else q = query(collection(db,'submissions'), orderBy('createdAt','desc'));
+    const col = collection(db, 'submissions');
+    if (filterVal === 'approved')
+      q = query(col, where('approved','==',true),  orderBy('createdAt','desc'));
+    else if (filterVal === 'pending')
+      q = query(col, where('approved','==',false), orderBy('createdAt','desc'));
+    else
+      q = query(col, orderBy('createdAt','desc'));
 
     const snap = await getDocs(q);
     document.getElementById('sub-count').textContent = `Барлығы: ${snap.size}`;
@@ -139,94 +153,138 @@ window.loadSubmissions = async () => {
     }
 
     snap.forEach(docSnap => {
-      const d = docSnap.data();
+      const d  = docSnap.data();
       const id = docSnap.id;
       const date = d.createdAt?.toDate?.()?.toLocaleDateString('ru-RU') || '—';
-      const approved = d.approved === true;
+      const isApproved = d.approved === true;
 
       const card = document.createElement('div');
       card.className = 'work-card';
+
+      // Медиа из base64
+      let mediaHTML = '';
+      if (d.fileData) {
+        if (d.fileType?.startsWith('video')) {
+          mediaHTML = `<video src="${d.fileData}" controls></video>`;
+        } else {
+          mediaHTML = `<img src="${d.fileData}" alt="Жұмыс" loading="lazy">`;
+        }
+      }
+
       card.innerHTML = `
         <div class="work-card-header">
-          <span class="work-card-name">${d.studentName||'—'} · ${d.studentClass||''}</span>
-          <span class="${approved?'badge-approved':'badge-pending'}">${approved?'Жарияланған':'Күтуде'}</span>
+          <span class="work-card-name">${d.studentName||'—'}${d.studentClass ? ' · '+d.studentClass : ''}</span>
+          <span class="${isApproved?'badge-approved':'badge-pending'}">${isApproved?'Жарияланған':'Күтуде'}</span>
         </div>
-        <div class="work-card-date">${date}</div>
+        <div class="work-card-date">${date}${d.fileSizeKb ? ' · '+d.fileSizeKb+' KB' : ''}</div>
         ${d.storyTitleKz||d.storyTitleRu ? `<div class="work-card-story">📖 ${d.storyTitleKz||d.storyTitleRu}</div>` : ''}
         ${d.answer ? `<div class="work-card-answer">${d.answer}</div>` : ''}
-        ${d.fileUrl ? (d.fileType?.startsWith('video')
-          ? `<video src="${d.fileUrl}" controls></video>`
-          : `<img src="${d.fileUrl}" alt="Жұмыс" loading="lazy">`
-        ) : ''}
-        <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;">
-          ${!approved ? `<button class="btn btn-primary btn-sm" onclick="approveWork('${id}')">Галереяға жариялау</button>` : ''}
+        ${mediaHTML}
+        <div class="work-actions">
+          ${!isApproved
+            ? `<button class="btn btn-primary btn-sm" onclick="approveWork('${id}',this)">Галереяға жариялау</button>`
+            : ''}
           <button class="btn btn-outline btn-sm" onclick="deleteWork('${id}',this)">Жою</button>
         </div>`;
+
       grid.appendChild(card);
     });
+
   } catch(e) {
     grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1"><p>Қате: ${e.message}</p></div>`;
+    console.error(e);
   }
 };
 
-window.approveWork = async (id) => {
+// ── Approve ─────────────────────────────────────────────
+window.approveWork = async (id, btn) => {
+  btn.disabled = true;
+  btn.textContent = '...';
   try {
     await updateDoc(doc(db,'submissions',id), { approved: true });
     loadSubmissions();
-  } catch(e) { alert('Қате: '+e.message); }
+  } catch(e) { alert('Қате: '+e.message); btn.disabled=false; }
 };
 
+// ── Delete ──────────────────────────────────────────────
 window.deleteWork = async (id, btn) => {
   if (!confirm('Жұмысты жою керек пе?')) return;
-  const { deleteDoc } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+  btn.disabled = true;
   try {
     await deleteDoc(doc(db,'submissions',id));
     btn.closest('.work-card').remove();
-  } catch(e) { alert('Қате: '+e.message); }
+    // Update count
+    const countEl = document.getElementById('sub-count');
+    const cur = parseInt(countEl.textContent.match(/\d+/)?.[0]||'0');
+    countEl.textContent = `Барлығы: ${Math.max(0,cur-1)}`;
+  } catch(e) { alert('Қате: '+e.message); btn.disabled=false; }
 };
 
-// Upload to gallery
+// ── Upload to gallery (base64, no Storage) ──────────────
 window.previewUpload = (input) => {
   const file = input.files[0];
   if (!file) return;
-  const preview = document.getElementById('uploadPreview');
-  const url = URL.createObjectURL(file);
-  if (file.type.startsWith('video')) {
-    preview.innerHTML = `<video src="${url}" controls style="width:100%;max-height:160px;border-radius:10px;"></video>`;
-  } else {
-    preview.innerHTML = `<img src="${url}" style="width:100%;max-height:160px;object-fit:cover;border-radius:10px;">`;
+  const status = document.getElementById('uploadStatus');
+
+  if (file.size > MAX_SIZE) {
+    status.style.color = 'var(--danger)';
+    status.textContent = 'Файл өте үлкен. Максимум 500KB.';
+    input.value = '';
+    return;
   }
+  status.textContent = '';
+
+  const url = URL.createObjectURL(file);
+  const preview = document.getElementById('uploadPreview');
+  preview.innerHTML = file.type.startsWith('video')
+    ? `<video src="${url}" controls></video>`
+    : `<img src="${url}" alt="preview">`;
 };
 
 window.uploadToGallery = async () => {
-  const file = document.getElementById('uploadFile').files[0];
-  const cat  = document.getElementById('uploadCat').value;
-  const status = document.getElementById('uploadStatus');
+  const file    = document.getElementById('uploadFile').files[0];
+  const cat     = document.getElementById('uploadCat').value;
+  const status  = document.getElementById('uploadStatus');
 
-  if (!file) { status.textContent = 'Файл таңдаңыз'; return; }
+  if (!file) { status.style.color='var(--danger)'; status.textContent='Файл таңдаңыз'; return; }
+  if (file.size > MAX_SIZE) {
+    status.style.color = 'var(--danger)';
+    status.textContent = 'Файл өте үлкен. Максимум 500KB.';
+    return;
+  }
+
+  status.style.color = 'var(--text-muted)';
   status.textContent = 'Жүктелуде...';
 
   try {
-    const path = `gallery/${cat}/${Date.now()}_${file.name}`;
-    const storageRef = ref(storage, path);
-    const task = uploadBytesResumable(storageRef, file);
+    // Convert to base64
+    const fileData = await new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload  = () => resolve(reader.result);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
 
-    task.on('state_changed',
-      snap => { status.textContent = `Жүктелуде: ${Math.round(snap.bytesTransferred/snap.totalBytes*100)}%`; },
-      err  => { status.textContent = 'Қате: ' + err.message; },
-      async () => {
-        const url = await getDownloadURL(task.snapshot.ref);
-        await addDoc(collection(db,'gallery'), {
-          src: url, type: file.type.startsWith('video') ? 'video' : 'image',
-          category: cat, createdAt: serverTimestamp()
-        });
-        status.textContent = '✓ Галереяға жарияланды!';
-        document.getElementById('uploadFile').value = '';
-        document.getElementById('uploadPreview').innerHTML = '';
-        setTimeout(() => { status.textContent=''; }, 3000);
-      }
-    );
-  } catch(e) { status.textContent = 'Қате: '+e.message; }
+    await addDoc(collection(db,'gallery'), {
+      src:       fileData,   // base64 data URL
+      type:      file.type.startsWith('video') ? 'video' : 'image',
+      category:  cat,
+      fileName:  file.name,
+      fileSizeKb: Math.round(file.size/1024),
+      createdAt: serverTimestamp()
+    });
+
+    status.style.color = 'var(--success)';
+    status.textContent = '✓ Галереяға жарияланды!';
+    document.getElementById('uploadFile').value   = '';
+    document.getElementById('uploadPreview').innerHTML = '';
+    setTimeout(() => { status.textContent = ''; }, 3000);
+
+  } catch(e) {
+    status.style.color  = 'var(--danger)';
+    status.textContent  = 'Қате: ' + e.message;
+    console.error(e);
+  }
 };
 </script>
 </body>
