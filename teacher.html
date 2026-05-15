@@ -22,7 +22,22 @@
     .work-actions{display:flex;gap:8px;flex-wrap:wrap;}
     .badge-approved{background:#dcfce7;color:#065f46;padding:3px 10px;border-radius:999px;font-size:11px;font-weight:700;}
     .badge-pending{background:#fef3c7;color:#92400e;padding:3px 10px;border-radius:999px;font-size:11px;font-weight:700;}
-    #loadingMsg{text-align:center;padding:60px;color:var(--text-muted);font-size:15px;}
+    .stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:20px;display:flex;flex-direction:column;gap:8px;box-shadow:var(--shadow-sm);}
+    .stat-icon{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;font-size:20px;flex-shrink:0;}
+    .stat-num{font-family:'Playfair Display',serif;font-size:36px;font-weight:700;color:var(--text-primary);line-height:1;}
+    .stat-label{font-size:13px;color:var(--text-muted);font-weight:500;}
+    .story-row{display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--border);gap:10px;}
+    .story-row:last-child{border-bottom:none;}
+    .story-row-title{font-size:13px;color:var(--text-primary);flex:1;line-height:1.4;}
+    .story-row-count{font-size:13px;font-weight:700;color:var(--brand);white-space:nowrap;}
+    .event-row{display:flex;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);align-items:flex-start;}
+    .event-row:last-child{border-bottom:none;}
+    .event-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:4px;}
+    .event-dot-view{background:#818cf8;}
+    .event-dot-open{background:#34d399;}
+    .event-dot-submit{background:#f59e0b;}
+    .event-text{font-size:12px;color:var(--text-secondary);line-height:1.5;}
+    .event-time{font-size:11px;color:var(--text-muted);white-space:nowrap;}
     .upload-zone{border:2px dashed var(--border-mid);border-radius:var(--radius-lg);padding:32px;text-align:center;}
     .upload-zone:hover{border-color:var(--brand);}
     #uploadPreview img,#uploadPreview video{width:100%;max-height:180px;object-fit:cover;border-radius:var(--radius-sm);margin-top:12px;}
@@ -43,6 +58,7 @@
 
   <div class="teacher-tabs">
     <button class="t-tab active" id="tab-btn-submissions" onclick="showTab('submissions',this)">Оқушы жұмыстары</button>
+    <button class="t-tab" id="tab-btn-analytics" onclick="showTab('analytics',this)">Статистика</button>
     <button class="t-tab" id="tab-btn-upload" onclick="showTab('upload',this)">Медиа жүктеу</button>
   </div>
 
@@ -61,6 +77,26 @@
   </div>
 
   <!-- UPLOAD (base64 — без Storage) -->
+  <!-- ANALYTICS TAB -->
+  <div id="tab-analytics" style="display:none;">
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:16px;margin-bottom:28px;">
+      <div class="stat-card"><div class="stat-icon" style="background:#ede9fe;">👁</div><div class="stat-num" id="stat-visits">—</div><div class="stat-label">Барлық кіру</div></div>
+      <div class="stat-card"><div class="stat-icon" style="background:#dbeafe;">📖</div><div class="stat-num" id="stat-stories">—</div><div class="stat-label">Мәтін ашылуы</div></div>
+      <div class="stat-card"><div class="stat-icon" style="background:#dcfce7;">✅</div><div class="stat-num" id="stat-submits">—</div><div class="stat-label">Жіберілген жұмыс</div></div>
+      <div class="stat-card"><div class="stat-icon" style="background:#fef3c7;">👤</div><div class="stat-num" id="stat-uniq">—</div><div class="stat-label">Бірегей оқырман</div></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+      <div class="sidebar-block">
+        <h3 style="margin-bottom:14px;font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--text-muted);">Ең көп оқылған мәтіндер</h3>
+        <div id="topStoriesList"><p style="color:var(--text-muted);font-size:13px;">Жүктелуде...</p></div>
+      </div>
+      <div class="sidebar-block">
+        <h3 style="margin-bottom:14px;font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--text-muted);">Соңғы оқиғалар</h3>
+        <div id="recentEventsList"><p style="color:var(--text-muted);font-size:13px;">Жүктелуде...</p></div>
+      </div>
+    </div>
+  </div>
+
   <div id="tab-upload" style="display:none;">
     <div class="sidebar-block" style="max-width:520px;">
       <h3 style="margin-bottom:16px;font-size:17px;">Галереяға медиа жүктеу</h3>
@@ -124,7 +160,9 @@ window.showTab = (tab, btn) => {
   document.querySelectorAll('.t-tab').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
   document.getElementById('tab-submissions').style.display = tab==='submissions' ? '' : 'none';
+  document.getElementById('tab-analytics').style.display   = tab==='analytics'   ? '' : 'none';
   document.getElementById('tab-upload').style.display      = tab==='upload'      ? '' : 'none';
+  if (tab === 'analytics') loadAnalytics();
 };
 
 // ── Load submissions ────────────────────────────────────
@@ -193,6 +231,79 @@ window.loadSubmissions = async () => {
   } catch(e) {
     grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1"><p>Қате: ${e.message}</p></div>`;
     console.error(e);
+  }
+};
+
+// ── Analytics ────────────────────────────────────────────
+window.loadAnalytics = async () => {
+  const set = (id, v) => { const el=document.getElementById(id); if(el) el.textContent=v; };
+
+  try {
+    const { collection, query, orderBy, limit, getDocs }
+      = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+
+    // Последние 500 событий
+    const snap = await getDocs(query(collection(db,'analytics'), orderBy('ts','desc'), limit(500)));
+    const events = snap.docs.map(d => ({ id:d.id, ...d.data() }));
+
+    // Подсчёт
+    const visits  = events.filter(e => e.type === 'pageview').length;
+    const opens   = events.filter(e => e.type === 'story_open').length;
+    const submits = events.filter(e => e.type === 'story_submit').length;
+    const uniqSessions = new Set(events.map(e => e.sessionId)).size;
+
+    set('stat-visits',  visits);
+    set('stat-stories', opens);
+    set('stat-submits', submits);
+    set('stat-uniq',    uniqSessions);
+
+    // Топ мәтіндер
+    const storyCounts = {};
+    events.filter(e => e.type==='story_open').forEach(e => {
+      const key = e.storyTitleKz || e.storyTitleRu || e.storyId || '—';
+      storyCounts[key] = (storyCounts[key]||0) + 1;
+    });
+    const topStories = Object.entries(storyCounts)
+      .sort((a,b) => b[1]-a[1]).slice(0,8);
+
+    const topEl = document.getElementById('topStoriesList');
+    if (topEl) {
+      topEl.innerHTML = topStories.length
+        ? topStories.map(([title,count]) => `
+            <div class="story-row">
+              <span class="story-row-title">${title}</span>
+              <span class="story-row-count">${count} рет</span>
+            </div>`).join('')
+        : '<p style="color:var(--text-muted);font-size:13px;">Деректер жоқ</p>';
+    }
+
+    // Соңғы оқиғалар
+    const typeLabel = { pageview:'Кіру', story_open:'Мәтін ашты', story_submit:'Жұмыс жіберді' };
+    const typeClass = { pageview:'event-dot-view', story_open:'event-dot-open', story_submit:'event-dot-submit' };
+    const recent = events.slice(0,15);
+
+    const recEl = document.getElementById('recentEventsList');
+    if (recEl) {
+      recEl.innerHTML = recent.length
+        ? recent.map(e => {
+            const time = e.ts?.toDate?.()?.toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'}) || '';
+            const date = e.ts?.toDate?.()?.toLocaleDateString('ru-RU') || '';
+            const label = typeLabel[e.type] || e.type;
+            const title = e.storyTitleKz ? ` — ${e.storyTitleKz}` : (e.page && e.page!=='story' ? ` (${e.page})` : '');
+            return `
+              <div class="event-row">
+                <span class="event-dot ${typeClass[e.type]||'event-dot-view'}"></span>
+                <span class="event-text">${label}${title}</span>
+                <span class="event-time">${date} ${time}</span>
+              </div>`;
+          }).join('')
+        : '<p style="color:var(--text-muted);font-size:13px;">Деректер жоқ</p>';
+    }
+
+  } catch(e) {
+    console.error('Analytics error:', e);
+    const topEl = document.getElementById('topStoriesList');
+    if (topEl) topEl.innerHTML = `<p style="color:var(--danger);font-size:13px;">Қате: ${e.message}</p>`;
   }
 };
 
