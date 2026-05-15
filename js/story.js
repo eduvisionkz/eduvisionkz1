@@ -157,6 +157,18 @@ window.submitWork = async function() {
 
     btnText.textContent = L.sending;
 
+    // Трекаем отправку работы
+    if (window._logEvent) {
+      window._logEvent('story_submit', {
+        storyId:      storyId || '',
+        storyTitleRu: story?.title?.ru || '',
+        storyTitleKz: story?.title?.kz || '',
+        category:     story?.category  || '',
+        hasFile:      !!file,
+        hasAnswer:    !!answer
+      });
+    }
+
     await addDoc(collection(db, 'submissions'), {
       studentName:  name,
       studentClass: cls,
