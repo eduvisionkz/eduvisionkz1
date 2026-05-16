@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Материалдар | Кітаптан мультфильмге дейін</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=Playfair+Display:wght@600;700&display=swap">
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .mat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:18px;}
+    .mat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:22px;box-shadow:var(--shadow-sm);display:flex;flex-direction:column;gap:12px;transition:transform .2s,box-shadow .2s;}
+    .mat-card:hover{transform:translateY(-4px);box-shadow:var(--shadow);}
+    .mat-icon{width:48px;height:48px;border-radius:14px;display:grid;place-items:center;font-size:24px;flex-shrink:0;}
+    .mat-title{font-weight:700;font-size:15px;line-height:1.35;color:var(--text-primary);}
+    .mat-desc{font-size:13px;color:var(--text-secondary);line-height:1.5;flex:1;}
+    .mat-meta{font-size:11px;color:var(--text-muted);font-weight:600;text-transform:uppercase;letter-spacing:.4px;}
+    .mat-btn{display:inline-flex;align-items:center;gap:7px;padding:9px 16px;border-radius:var(--radius-sm);font-size:13px;font-weight:700;background:var(--brand-light);color:var(--brand);transition:all .18s;text-decoration:none;border:none;cursor:pointer;width:fit-content;}
+    .mat-btn:hover{background:var(--brand);color:white;}
+    .cat-pdf   .mat-icon{background:#fee2e2;} 
+    .cat-word  .mat-icon{background:#dbeafe;}
+    .cat-link  .mat-icon{background:#dcfce7;}
+    .cat-other .mat-icon{background:#fef3c7;}
+  </style>
+</head>
+<body>
+
+<div id="nav-placeholder"></div>
+
+<main class="page">
+  <div class="page-header">
+    <h1 id="mat-title">Материалдар</h1>
+    <p id="mat-desc">Мұғалім жүктеген оқу құралдары, сілтемелер және файлдар</p>
+  </div>
+
+  <div class="filter-bar" id="matFilters" style="margin-bottom:20px;">
+    <button class="filter-btn active" data-mcat="all">Барлығы</button>
+    <button class="filter-btn" data-mcat="pdf">PDF</button>
+    <button class="filter-btn" data-mcat="word">Word</button>
+    <button class="filter-btn" data-mcat="link">Сілтеме</button>
+    <button class="filter-btn" data-mcat="other">Басқа</button>
+  </div>
+
+  <div class="mat-grid" id="matGrid">
+    <div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--text-muted);">Жүктелуде...</div>
+  </div>
+</main>
+
+<footer><p>«Кітаптан мультфильмге дейін: Отбасылық стартап» &copy; 2025</p></footer>
+
+<script src="js/nav.js"></script>
+<script src="js/analytics.js"></script>
+<script type="module">
+import { db } from './js/firebase-config.js';
+import { collection, getDocs, orderBy, query }
+  from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+
+const UI = {
+  kz:{ title:'Материалдар', desc:'Мұғалім жүктеген оқу құралдары, сілтемелер және файлдар',
+       all:'Барлығы', pdf:'PDF', word:'Word', link:'Сілтеме', other:'Басқа',
+       open:'Ашу', download:'Жүктеу', noMat:'Материал жоқ.' },
+  ru:{ title:'Материалы', desc:'Учебные пособия, ссылки и файлы от учителя',
+       all:'Все', pdf:'PDF', word:'Word', link:'Ссылка', other:'Другое',
+       open:'Открыть', download:'Скачать', noMat:'Материалов нет.' }
+};
+
+const ICONS = { pdf:'📄', word:'📝', link:'🔗', other:'📎' };
+const COLORS = { pdf:'cat-pdf', word:'cat-word', link:'cat-link', other:'cat-other' };
+
+let allMats = [];
+let currentCat = 'all';
+
+async function loadMaterials() {
+  try {
+    const snap = await getDocs(query(collection(db,'materials'), orderBy('createdAt','desc')));
+    allMats = snap.docs.map(d => ({ id:d.id, ...d.data() }));
+    renderMaterials();
+  } catch(e) {
+    document.getElementById('matGrid').innerHTML =
+      `<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--text-muted);">Қате: ${e.message}</div>`;
+  }
+}
+
+function renderMaterials() {
+  const lang = window.currentLang || 'kz';
+  const L = UI[lang] || UI.kz;
+  const grid = document.getElementById('matGrid');
+  const items = currentCat === 'all' ? allMats : allMats.filter(m => m.fileCategory === currentCat);
+
+  if (!items.length) {
+    grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--text-muted);">${L.noMat}</div>`;
+    return;
+  }
+
+  grid.innerHTML = '';
+  items.forEach(m => {
+    const cat   = m.fileCategory || 'other';
+    const icon  = ICONS[cat]  || '📎';
+    const color = COLORS[cat] || 'cat-other';
+    const card  = document.createElement('div');
+    card.className = `mat-card ${color}`;
+
+    let actionBtn = '';
+    if (m.type === 'link') {
+      actionBtn = `<a class="mat-btn" href="${m.url}" target="_blank" rel="noopener">${icon} ${L.open}</a>`;
+    } else if (m.fileData) {
+      // base64 файл — скачать
+      actionBtn = `<button class="mat-btn" onclick="downloadFile('${m.id}','${m.fileName||'file'}')">⬇ ${L.download}</button>`;
+    }
+
+    const date = m.createdAt?.toDate?.()?.toLocaleDateString('ru-RU') || '';
+
+    card.innerHTML = `
+      <div style="display:flex;align-items:center;gap:12px;">
+        <div class="mat-icon">${icon}</div>
+        <div>
+          <div class="mat-meta">${cat.toUpperCase()} ${date ? '· '+date : ''}</div>
+          <div class="mat-title">${m.title || m.fileName || '—'}</div>
+        </div>
+      </div>
+      ${m.description ? `<p class="mat-desc">${m.description}</p>` : ''}
+      ${actionBtn}`;
+
+    grid.appendChild(card);
+  });
+}
+
+// Скачать base64 файл
+window.downloadFile = (id, fileName) => {
+  const mat = allMats.find(m => m.id === id);
+  if (!mat?.fileData) return;
+  const a = document.createElement('a');
+  a.href = mat.fileData;
+  a.download = fileName;
+  a.click();
+};
+
+// Фильтры
+document.getElementById('matFilters').addEventListener('click', e => {
+  const btn = e.target.closest('[data-mcat]');
+  if (!btn) return;
+  currentCat = btn.dataset.mcat;
+  document.querySelectorAll('[data-mcat]').forEach(b => b.classList.toggle('active', b.dataset.mcat === currentCat));
+  renderMaterials();
+});
+
+window.onLangChange = () => {
+  const lang = window.currentLang || 'kz';
+  const L = UI[lang] || UI.kz;
+  const set = (id,v) => { const el=document.getElementById(id); if(el) el.textContent=v; };
+  set('mat-title', L.title);
+  set('mat-desc',  L.desc);
+  document.querySelectorAll('[data-mcat]').forEach(btn => {
+    const key = btn.dataset.mcat;
+    if (L[key]) btn.textContent = L[key];
+  });
+  renderMaterials();
+};
+
+loadMaterials();
+</script>
+</body>
+</html>
