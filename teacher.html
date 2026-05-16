@@ -59,6 +59,7 @@
   <div class="teacher-tabs">
     <button class="t-tab active" id="tab-btn-submissions" onclick="showTab('submissions',this)">Оқушы жұмыстары</button>
     <button class="t-tab" id="tab-btn-analytics" onclick="showTab('analytics',this)">Статистика</button>
+    <button class="t-tab" id="tab-btn-materials" onclick="showTab('materials',this)">Материалдар</button>
     <button class="t-tab" id="tab-btn-upload" onclick="showTab('upload',this)">Медиа жүктеу</button>
   </div>
 
@@ -97,7 +98,52 @@
     </div>
   </div>
 
-  <div id="tab-upload" style="display:none;">
+  <!-- MATERIALS TAB -->
+  <div id="tab-materials" style="display:none;">
+    <div class="sidebar-block" style="max-width:560px;margin-bottom:24px;">
+      <h3 style="margin-bottom:16px;font-size:17px;">Материал қосу</h3>
+
+      <div class="form-group">
+        <label class="form-label">Атауы</label>
+        <input class="form-input" id="matTitle" type="text" placeholder="Материал атауы">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Сипаттама (міндетті емес)</label>
+        <textarea class="form-textarea" id="matDesc" rows="2" placeholder="Қысқаша сипаттама..."></textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Түрі</label>
+        <select id="matType" class="form-input" onchange="toggleMatType(this.value)">
+          <option value="file">Файл (PDF, Word, т.б.)</option>
+          <option value="link">Сілтеме (URL)</option>
+        </select>
+      </div>
+
+      <!-- File upload -->
+      <div id="matFileBlock" class="form-group">
+        <label class="form-label">Файл (макс. 500KB)</label>
+        <input class="form-file" id="matFile" type="file"
+          accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.txt,application/*">
+        <p style="font-size:11px;color:var(--text-muted);margin-top:5px;">PDF, Word, PowerPoint, Excel</p>
+      </div>
+
+      <!-- Link -->
+      <div id="matLinkBlock" class="form-group" style="display:none;">
+        <label class="form-label">Сілтеме (URL)</label>
+        <input class="form-input" id="matUrl" type="url" placeholder="https://...">
+      </div>
+
+      <button class="btn btn-primary" style="width:100%;" onclick="addMaterial()">Қосу</button>
+      <p id="matStatus" style="margin-top:10px;font-size:13px;font-weight:600;min-height:18px;"></p>
+    </div>
+
+    <!-- Existing materials list -->
+    <h3 style="margin-bottom:14px;font-size:15px;font-weight:700;">Жүктелген материалдар</h3>
+    <div class="mat-list-grid" id="matListGrid"
+      style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px;"></div>
+  </div>
+
+  <!-- UPLOAD TAB -->
     <div class="sidebar-block" style="max-width:520px;">
       <h3 style="margin-bottom:16px;font-size:17px;">Галереяға медиа жүктеу</h3>
       <p style="font-size:13px;color:var(--text-muted);margin-bottom:16px;">Фото немесе видео таңдаңыз (макс. 500KB)</p>
@@ -161,8 +207,10 @@ window.showTab = (tab, btn) => {
   btn.classList.add('active');
   document.getElementById('tab-submissions').style.display = tab==='submissions' ? '' : 'none';
   document.getElementById('tab-analytics').style.display   = tab==='analytics'   ? '' : 'none';
+  document.getElementById('tab-materials').style.display   = tab==='materials'   ? '' : 'none';
   document.getElementById('tab-upload').style.display      = tab==='upload'      ? '' : 'none';
   if (tab === 'analytics') loadAnalytics();
+  if (tab === 'materials') loadMatList();
 };
 
 // ── Load submissions ────────────────────────────────────
@@ -328,6 +376,117 @@ window.deleteWork = async (id, btn) => {
     const countEl = document.getElementById('sub-count');
     const cur = parseInt(countEl.textContent.match(/\d+/)?.[0]||'0');
     countEl.textContent = `Барлығы: ${Math.max(0,cur-1)}`;
+  } catch(e) { alert('Қате: '+e.message); btn.disabled=false; }
+};
+
+// ── Materials ────────────────────────────────────────────
+window.toggleMatType = (val) => {
+  document.getElementById('matFileBlock').style.display = val==='file' ? '' : 'none';
+  document.getElementById('matLinkBlock').style.display = val==='link' ? '' : 'none';
+};
+
+window.addMaterial = async () => {
+  const title  = document.getElementById('matTitle').value.trim();
+  const desc   = document.getElementById('matDesc').value.trim();
+  const type   = document.getElementById('matType').value;
+  const status = document.getElementById('matStatus');
+  const MAX    = 500 * 1024;
+
+  if (!title) { status.style.color='var(--danger)'; status.textContent='Атауын жазыңыз'; return; }
+
+  status.style.color = 'var(--text-muted)';
+  status.textContent = 'Сақталуда...';
+
+  try {
+    let docData = { title, description:desc, type, createdAt: serverTimestamp() };
+
+    if (type === 'link') {
+      const url = document.getElementById('matUrl').value.trim();
+      if (!url) { status.style.color='var(--danger)'; status.textContent='Сілтемені енгізіңіз'; return; }
+      docData.url = url;
+      docData.fileCategory = 'link';
+
+    } else {
+      const file = document.getElementById('matFile').files[0];
+      if (!file) { status.style.color='var(--danger)'; status.textContent='Файл таңдаңыз'; return; }
+      if (file.size > MAX) { status.style.color='var(--danger)'; status.textContent='Файл өте үлкен. Макс. 500KB'; return; }
+
+      // Detect category
+      const name = file.name.toLowerCase();
+      let fileCategory = 'other';
+      if (name.endsWith('.pdf')) fileCategory = 'pdf';
+      else if (name.match(/\.(doc|docx)$/)) fileCategory = 'word';
+
+      // Convert to base64
+      const fileData = await new Promise((res, rej) => {
+        const r = new FileReader();
+        r.onload = () => res(r.result);
+        r.onerror = rej;
+        r.readAsDataURL(file);
+      });
+
+      docData.fileData     = fileData;
+      docData.fileName     = file.name;
+      docData.fileType     = file.type;
+      docData.fileSizeKb   = Math.round(file.size/1024);
+      docData.fileCategory = fileCategory;
+    }
+
+    await addDoc(collection(db,'materials'), docData);
+
+    status.style.color = 'var(--success)';
+    status.textContent = '✓ Материал сәтті қосылды!';
+
+    document.getElementById('matTitle').value = '';
+    document.getElementById('matDesc').value  = '';
+    document.getElementById('matFile').value  = '';
+    document.getElementById('matUrl').value   = '';
+
+    loadMatList();
+    setTimeout(() => { status.textContent=''; }, 3000);
+
+  } catch(e) {
+    status.style.color  = 'var(--danger)';
+    status.textContent  = 'Қате: '+e.message;
+  }
+};
+
+async function loadMatList() {
+  const grid = document.getElementById('matListGrid');
+  if (!grid) return;
+  grid.innerHTML = '<p style="color:var(--text-muted);font-size:13px;">Жүктелуде...</p>';
+  try {
+    const snap = await getDocs(query(collection(db,'materials'), orderBy('createdAt','desc')));
+    grid.innerHTML = '';
+    if (snap.empty) { grid.innerHTML='<p style="color:var(--text-muted);font-size:13px;">Материал жоқ</p>'; return; }
+    snap.forEach(docSnap => {
+      const m = docSnap.data();
+      const id = docSnap.id;
+      const ICONS = { pdf:'📄', word:'📝', link:'🔗', other:'📎' };
+      const icon = ICONS[m.fileCategory] || '📎';
+      const date = m.createdAt?.toDate?.()?.toLocaleDateString('ru-RU') || '';
+      const card = document.createElement('div');
+      card.style.cssText = 'background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);padding:14px;display:flex;align-items:center;gap:12px;';
+      card.innerHTML = `
+        <span style="font-size:22px;">${icon}</span>
+        <div style="flex:1;min-width:0;">
+          <div style="font-weight:700;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${m.title||m.fileName||'—'}</div>
+          <div style="font-size:11px;color:var(--text-muted);">${(m.fileCategory||'').toUpperCase()} ${m.fileSizeKb ? '· '+m.fileSizeKb+'KB' : ''} ${date ? '· '+date : ''}</div>
+        </div>
+        <button onclick="deleteMat('${id}',this)" style="color:var(--danger);font-size:18px;background:none;border:none;cursor:pointer;padding:4px;flex-shrink:0;" title="Жою">✕</button>`;
+      grid.appendChild(card);
+    });
+  } catch(e) {
+    grid.innerHTML = `<p style="color:var(--danger);font-size:13px;">Қате: ${e.message}</p>`;
+  }
+}
+
+window.deleteMat = async (id, btn) => {
+  if (!confirm('Материалды жою керек пе?')) return;
+  btn.disabled = true;
+  try {
+    await deleteDoc(doc(db,'materials',id));
+    btn.closest('div[style]').remove();
   } catch(e) { alert('Қате: '+e.message); btn.disabled=false; }
 };
 
