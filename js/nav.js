@@ -3,8 +3,8 @@
 
 (function () {
   const NAV_LABELS = {
-    kz: { home:'Басты бет', stories:'Мәтіндер', instructions:'Нұсқаулық', gallery:'Галерея', teacher:'Мұғалім' },
-    ru: { home:'Главная',   stories:'Тексты',    instructions:'Инструкция', gallery:'Галерея', teacher:'Учитель' }
+    kz: { home:'Басты бет', stories:'Мәтіндер', instructions:'Нұсқаулық', gallery:'Галерея', materials:'Материалдар', teacher:'Мұғалім' },
+    ru: { home:'Главная',   stories:'Тексты',    instructions:'Инструкция', gallery:'Галерея', materials:'Материалы',   teacher:'Учитель' }
   };
 
   function buildNav() {
@@ -25,6 +25,7 @@
         <a href="stories.html"      data-nav="stories">${L.stories}</a>
         <a href="instructions.html" data-nav="instructions">${L.instructions}</a>
         <a href="gallery.html"      data-nav="gallery">${L.gallery}</a>
+        <a href="materials.html"    data-nav="materials">${L.materials}</a>
         <a href="teacher.html"      data-nav="teacher">${L.teacher}</a>
       </div>
       <div class="nav-right">
@@ -58,7 +59,7 @@
 
     // Update nav link texts
     const L = NAV_LABELS[lang];
-    const map = { index:'home', stories:'stories', instructions:'instructions', gallery:'gallery', teacher:'teacher' };
+    const map = { index:'home', stories:'stories', instructions:'instructions', gallery:'gallery', materials:'materials', teacher:'teacher' };
     document.querySelectorAll('[data-nav]').forEach(a => {
       const key = map[a.dataset.nav];
       if (key) a.textContent = L[key];
