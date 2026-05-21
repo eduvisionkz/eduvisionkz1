@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Статистика | Кітаптан мультфильмге дейін</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=Playfair+Display:wght@600;700&display=swap">
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .stats-hero{background:linear-gradient(135deg,#eef2ff,#f8f9ff);border-radius:var(--radius-xl);padding:40px;margin:24px 0;text-align:center;}
+    .stats-hero h1{font-family:'Playfair Display',serif;font-size:36px;margin-bottom:8px;}
+    .stats-hero p{color:var(--text-secondary);font-size:16px;}
+    .stat-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:16px;margin:0 0 28px;}
+    .stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:22px;text-align:center;box-shadow:var(--shadow-sm);}
+    .stat-card .s-icon{font-size:28px;margin-bottom:10px;}
+    .stat-card .s-num{font-family:'Playfair Display',serif;font-size:40px;font-weight:700;color:var(--brand);line-height:1;}
+    .stat-card .s-label{font-size:12px;color:var(--text-muted);margin-top:6px;font-weight:600;text-transform:uppercase;letter-spacing:.3px;}
+    .two-col{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:28px;}
+    .panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:22px;box-shadow:var(--shadow-sm);}
+    .panel h3{font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--text-muted);margin-bottom:16px;}
+    .top-row{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--border);}
+    .top-row:last-child{border-bottom:none;}
+    .rank{width:22px;height:22px;border-radius:50%;font-size:11px;font-weight:700;display:grid;place-items:center;flex-shrink:0;background:var(--brand-light);color:var(--brand);}
+    .rank.r1{background:#fef3c7;color:#92400e;}
+    .rank.r2{background:#f1f5f9;color:#475569;}
+    .rank.r3{background:#fff7ed;color:#c2410c;}
+    .bar{height:5px;border-radius:999px;background:var(--bg);margin-top:3px;}
+    .bar-fill{height:100%;border-radius:999px;background:linear-gradient(90deg,var(--brand),var(--brand-mid));}
+    .ev-item{display:flex;gap:10px;padding:9px 0;border-bottom:1px solid var(--border);align-items:flex-start;}
+    .ev-item:last-child{border-bottom:none;}
+    .ev-dot{width:8px;height:8px;border-radius:50%;margin-top:5px;flex-shrink:0;}
+    .ev-text{font-size:13px;color:var(--text-secondary);flex:1;line-height:1.45;}
+    .ev-time{font-size:11px;color:var(--text-muted);white-space:nowrap;text-align:right;}
+    .live-badge{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:700;color:var(--success);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px;}
+    .live-dot{width:8px;height:8px;border-radius:50%;background:var(--success);animation:blink 2s infinite;}
+    @keyframes blink{0%,100%{opacity:1;}50%{opacity:.3;}}
+    @media(max-width:700px){.two-col{grid-template-columns:1fr;}}
+  </style>
+</head>
+<body>
+<div id="nav-placeholder"></div>
+
+<main class="page">
+  <div class="stats-hero">
+    <div class="live-badge"><span class="live-dot"></span><span id="live-label">Тікелей статистика</span></div>
+    <h1 id="stats-title">Платформа статистикасы</h1>
+    <p id="stats-desc">Нақты уақыттағы оқу және белсенділік деректері</p>
+  </div>
+
+  <div class="stat-cards">
+    <div class="stat-card"><div class="s-icon">👁</div><div class="s-num" id="s-visits">—</div><div class="s-label" id="sl-visits">Барлық кіру</div></div>
+    <div class="stat-card"><div class="s-icon">📖</div><div class="s-num" id="s-opens">—</div><div class="s-label" id="sl-opens">Мәтін ашылуы</div></div>
+    <div class="stat-card"><div class="s-icon">✅</div><div class="s-num" id="s-submits">—</div><div class="s-label" id="sl-submits">Жіберілген жұмыс</div></div>
+    <div class="stat-card"><div class="s-icon">👤</div><div class="s-num" id="s-uniq">—</div><div class="s-label" id="sl-uniq">Бірегей оқырман</div></div>
+    <div class="stat-card"><div class="s-icon">💬</div><div class="s-num" id="s-comments">—</div><div class="s-label" id="sl-comments">Пікірлер</div></div>
+  </div>
+
+  <div class="two-col">
+    <div class="panel">
+      <h3 id="top-title">Ең көп оқылған мәтіндер</h3>
+      <div id="topList"><p style="color:var(--text-muted);font-size:13px;">Жүктелуде...</p></div>
+    </div>
+    <div class="panel">
+      <h3 id="feed-title">Соңғы белсенділік</h3>
+      <div id="eventFeed"><p style="color:var(--text-muted);font-size:13px;">Жүктелуде...</p></div>
+    </div>
+  </div>
+</main>
+
+<footer><p>«Кітаптан мультфильмге дейін: Отбасылық стартап» &copy; 2025</p></footer>
+
+<script src="js/nav.js"></script>
+<script src="js/analytics.js"></script>
+<script type="module">
+import { db } from './js/firebase-config.js';
+import { collection, query, orderBy, limit, getDocs }
+  from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+
+const UI = {
+  kz:{
+    'live-label':'Тікелей статистика',
+    'stats-title':'Платформа статистикасы',
+    'stats-desc':'Нақты уақыттағы оқу және белсенділік деректері',
+    'sl-visits':'Барлық кіру','sl-opens':'Мәтін ашылуы',
+    'sl-submits':'Жіберілген жұмыс','sl-uniq':'Бірегей оқырман','sl-comments':'Пікірлер',
+    'top-title':'Ең көп оқылған мәтіндер','feed-title':'Соңғы белсенділік',
+    types:{ pageview:'Кірді', story_open:'Мәтін ашты', story_submit:'Жұмыс жіберді' },
+    times:'рет', noData:'Деректер жоқ'
+  },
+  ru:{
+    'live-label':'Статистика в реальном времени',
+    'stats-title':'Статистика платформы',
+    'stats-desc':'Данные об активности пользователей в реальном времени',
+    'sl-visits':'Всего посещений','sl-opens':'Открытий текстов',
+    'sl-submits':'Отправленных работ','sl-uniq':'Уникальных читателей','sl-comments':'Комментарии',
+    'top-title':'Самые читаемые тексты','feed-title':'Последняя активность',
+    types:{ pageview:'Зашёл', story_open:'Открыл текст', story_submit:'Отправил работу' },
+    times:'раз', noData:'Нет данных'
+  }
+};
+
+const dotColors = { pageview:'#818cf8', story_open:'#34d399', story_submit:'#f59e0b' };
+
+async function loadStats() {
+  const lang = window.currentLang || 'kz';
+  const L = UI[lang] || UI.kz;
+  const set = (id,v) => { const el=document.getElementById(id); if(el) el.textContent=v; };
+
+  try {
+    // Analytics events
+    const evSnap = await getDocs(query(collection(db,'analytics'), orderBy('ts','desc'), limit(500)));
+    const events = evSnap.docs.map(d => d.data());
+
+    set('s-visits',  events.filter(e=>e.type==='pageview').length);
+    set('s-opens',   events.filter(e=>e.type==='story_open').length);
+    set('s-submits', events.filter(e=>e.type==='story_submit').length);
+    set('s-uniq',    new Set(events.map(e=>e.sessionId)).size);
+
+    // Comments count
+    try {
+      const cSnap = await getDocs(collection(db,'comments'));
+      set('s-comments', cSnap.size);
+    } catch(e){ set('s-comments', 0); }
+
+    // Top stories
+    const counts = {};
+    events.filter(e=>e.type==='story_open').forEach(e=>{
+      const k = e.storyTitleKz || e.storyTitleRu || e.storyId || '—';
+      counts[k] = (counts[k]||0)+1;
+    });
+    const top = Object.entries(counts).sort((a,b)=>b[1]-a[1]).slice(0,7);
+    const maxC = top[0]?.[1]||1;
+    const rankCls = ['r1','r2','r3'];
+    document.getElementById('topList').innerHTML = top.length
+      ? top.map(([title,cnt],i)=>`
+          <div class="top-row">
+            <div class="rank ${rankCls[i]||''}">${i+1}</div>
+            <div style="flex:1;min-width:0;">
+              <div style="font-size:13px;line-height:1.4;">${title}</div>
+              <div class="bar"><div class="bar-fill" style="width:${Math.round(cnt/maxC*100)}%"></div></div>
+            </div>
+            <div style="font-size:13px;font-weight:700;color:var(--brand);white-space:nowrap;">${cnt} ${L.times}</div>
+          </div>`).join('')
+      : `<p style="color:var(--text-muted);font-size:13px;">${L.noData}</p>`;
+
+    // Feed
+    document.getElementById('eventFeed').innerHTML = events.slice(0,12).map(e=>{
+      const time = e.ts?.toDate?.()?.toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'})||'';
+      const date = e.ts?.toDate?.()?.toLocaleDateString('ru-RU')||'';
+      const label = L.types[e.type]||e.type;
+      const story = e.storyTitleKz ? ` — ${e.storyTitleKz}` : '';
+      return `<div class="ev-item">
+        <div class="ev-dot" style="background:${dotColors[e.type]||'#94a3b8'};"></div>
+        <div class="ev-text">${label}${story}</div>
+        <div class="ev-time">${date}<br>${time}</div>
+      </div>`;
+    }).join('') || `<p style="color:var(--text-muted);font-size:13px;">${L.noData}</p>`;
+
+  } catch(e){ console.error(e); }
+}
+
+window.onLangChange = () => {
+  const lang = window.currentLang||'kz';
+  const L = UI[lang]||UI.kz;
+  Object.entries(L).forEach(([id,v])=>{
+    if(typeof v==='string'){ const el=document.getElementById(id); if(el) el.textContent=v; }
+  });
+  loadStats();
+};
+
+loadStats();
+setInterval(loadStats, 30000); // автообновление каждые 30 сек
+</script>
+</body>
+</html>
