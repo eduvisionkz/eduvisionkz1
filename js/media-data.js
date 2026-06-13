@@ -33,6 +33,9 @@ window.MEDIA = [
 { type: "video", category: "results", src: "https://res.cloudinary.com/dtdq8ydwe/video/upload/v1776935928/video-projects3_y39sda.mp4" },
 { type: "video", category: "results", src: "https://res.cloudinary.com/dtdq8ydwe/video/upload/v1776935965/video-projects4_fzjqwa.mp4" },
 
+{ type: "video", category: "results", src: "https://res.cloudinary.com/dtdq8ydwe/video/upload/v1781346726/VID-20260610-WA0009_l6ugzt.mp4" },
+{ type: "video", category: "results", src: "https://res.cloudinary.com/dtdq8ydwe/video/upload/v1781346697/VID-20260610-WA0008_b38nw4.mp4" },
+
 { type: "image", category: "results", src: "https://res.cloudinary.com/dtdq8ydwe/image/upload/v1776937467/results1_cxjnpj.jpg" },
 { type: "image", category: "results", src: "https://res.cloudinary.com/dtdq8ydwe/image/upload/v1776937490/results2_pyri2k.jpg" },
 
