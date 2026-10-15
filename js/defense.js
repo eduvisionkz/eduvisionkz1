@@ -5,38 +5,46 @@
   const TOTAL = 7;
   let current = 0;
 
-  const slides    = document.querySelector('.def-slides');
-  const dots      = document.querySelectorAll('.def-dot');
-  const counter   = document.getElementById('def-counter');
-  const labelEl   = document.getElementById('def-slide-label');
-  const btnPrev   = document.getElementById('def-btn-prev');
-  const btnNext   = document.getElementById('def-btn-next');
+  const track    = document.getElementById('defTrack');
+  const dots     = document.querySelectorAll('.def-dot');
+  const stepLbl  = document.getElementById('stepLabel');
+  const bottomLbl= document.getElementById('bottomLabel');
+  const btnPrev  = document.getElementById('btnPrev');
+  const btnNext  = document.getElementById('btnNext');
 
-  const LABELS = [
-    'Экран 1 — Крючок · 45 сек',
-    'Экран 2 — Актуальность · 1 мин',
-    'Экран 3 — Идея + ЧТД · 1.5 мин',
-    'Экран 4 — Платформа · 1 мин',
-    'Экран 5 — Работы детей · 1 мин',
-    'Экран 6 — Результаты + Достижения · 1 мин',
-    'Экран 7 — Заключение · 45 сек'
+  const STEP_LABELS = [
+    'Экран 1 из 7',
+    'Экран 2 из 7',
+    'Экран 3 из 7',
+    'Экран 4 из 7',
+    'Экран 5 из 7',
+    'Экран 6 из 7',
+    'Экран 7 из 7'
+  ];
+
+  const BOTTOM_LABELS = [
+    'Экран 1 — Вступление',
+    'Экран 2 — Актуальность',
+    'Экран 3 — Модель ЧТД',
+    'Экран 4 — Платформа',
+    'Экран 5 — Работы детей',
+    'Экран 6 — Результаты',
+    'Экран 7 — Заключение'
   ];
 
   function goTo(n) {
     if (n < 0 || n >= TOTAL) return;
     current = n;
 
-    // Move slides
-    slides.style.transform = `translateX(${-100 / TOTAL * current}%)`;
+    // Move track
+    if (track) track.style.transform = `translateX(${-100 * current}%)`;
 
     // Dots
     dots.forEach((d, i) => d.classList.toggle('active', i === current));
 
-    // Counter
-    if (counter) counter.textContent = `${current + 1} / ${TOTAL}`;
-
-    // Label
-    if (labelEl) labelEl.textContent = LABELS[current] || '';
+    // Labels
+    if (stepLbl)   stepLbl.textContent   = STEP_LABELS[current]  || '';
+    if (bottomLbl) bottomLbl.textContent = BOTTOM_LABELS[current] || '';
 
     // Buttons
     if (btnPrev) btnPrev.disabled = current === 0;
@@ -64,41 +72,8 @@
     } else if (e.key === 'End') {
       e.preventDefault();
       goTo(TOTAL - 1);
-    } else if (e.key === 'Escape') {
-      exitFullscreen();
     }
   });
-
-  // Fullscreen
-  const btnFs = document.getElementById('def-btn-fs');
-
-  function enterFullscreen() {
-    const el = document.documentElement;
-    if (el.requestFullscreen) el.requestFullscreen();
-    else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
-    if (btnFs) btnFs.textContent = '⤡ Выйти';
-  }
-
-  function exitFullscreen() {
-    if (document.fullscreenElement) {
-      if (document.exitFullscreen) document.exitFullscreen();
-      else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
-    }
-    if (btnFs) btnFs.textContent = '⛶ На весь экран';
-  }
-
-  document.addEventListener('fullscreenchange', () => {
-    if (!document.fullscreenElement && btnFs) {
-      btnFs.textContent = '⛶ На весь экран';
-    }
-  });
-
-  if (btnFs) {
-    btnFs.addEventListener('click', () => {
-      if (document.fullscreenElement) exitFullscreen();
-      else enterFullscreen();
-    });
-  }
 
   // Swipe / touch support
   let touchStartX = 0;
@@ -111,6 +86,6 @@
     }
   }, { passive: true });
 
-  // Init on first slide
+  // Init
   goTo(0);
 })();
