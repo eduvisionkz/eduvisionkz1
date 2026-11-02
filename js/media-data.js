@@ -38,7 +38,10 @@ window.MEDIA = [
 
 { type: "image", category: "results", src: "https://res.cloudinary.com/dtdq8ydwe/image/upload/v1776937467/results1_cxjnpj.jpg" },
 { type: "image", category: "results", src: "https://res.cloudinary.com/dtdq8ydwe/image/upload/v1776937490/results2_pyri2k.jpg" },
-
+{ type: "video", category: "results", src: "https://res.cloudinary.com/dtdq8ydwe/video/upload/VID-20261102-WA0061_dh1br2.mp4" },
+{ type: "video", category: "results", src: "https://res.cloudinary.com/dtdq8ydwe/video/upload/VID-20261102-WA0062_irfkzj.mp4" },
+{ type: "video", category: "results", src: "https://res.cloudinary.com/dtdq8ydwe/video/upload/VID-20261101-WA0039_v9rzpw.mp4" },
+  
 /* ================= TECHNOLOGY ================= */
 
 { type: "video", category: "technology", src: "https://res.cloudinary.com/dtdq8ydwe/video/upload/v1776934961/digital-learning_vqrtdw.mp4" },
